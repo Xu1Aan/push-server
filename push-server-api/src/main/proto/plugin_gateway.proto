@@ -123,6 +123,16 @@ message ActionAck {
 enum PushContentType {
     PUSH_CONTENT_TYPE_TEXT = 0;
     PUSH_CONTENT_TYPE_MARKDOWN = 1;
+    PUSH_CONTENT_TYPE_IMAGE = 2;
+    PUSH_CONTENT_TYPE_NEWS = 3;
+    PUSH_CONTENT_TYPE_TEXT_CARD = 4;
+}
+
+message PushArticle {
+    string title = 1;
+    string description = 2;
+    string url = 3;
+    string pic_url = 4;
 }
 
 message PushRequest {
@@ -131,6 +141,11 @@ message PushRequest {
     string target_user_id = 3;
     PushContentType type = 4;
     string content = 5;
+    
+    string title = 6;
+    string url = 7;
+    string media_id = 8;
+    repeated PushArticle articles = 9;
 }
 
 message PushResponse {

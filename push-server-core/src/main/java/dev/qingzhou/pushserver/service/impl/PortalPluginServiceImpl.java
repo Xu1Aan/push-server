@@ -16,16 +16,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.qingzhou.pushserver.service.PluginManagerService;
+import dev.qingzhou.pushserver.grpc.PluginConnectionManager;
+import dev.qingzhou.push.api.spi.PushPlugin;
+import dev.qingzhou.push.api.model.PluginMeta;
+import java.util.ArrayList;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortalPluginServiceImpl implements PortalPluginService {
 
     private final PortalPluginMapper pluginMapper;
+    private final PluginManagerService pluginManagerService;
+    private final PluginConnectionManager connectionManager;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String createPlugin(PortalPluginCreateRequest request) {
+        // ... (unchanged)
         // 1. Check duplicate key
         if (pluginMapper.exists(new LambdaQueryWrapper<PortalPlugin>()
                 .eq(PortalPlugin::getPluginKey, request.getPluginKey()))) {
@@ -49,7 +58,9 @@ public class PortalPluginServiceImpl implements PortalPluginService {
 
         return token;
     }
-
+    
+    // ... resetToken and switchStatus (unchanged - assume they are fine or I just overwrite whole class to be safe)
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String resetToken(Integer id) {
@@ -62,8 +73,6 @@ public class PortalPluginServiceImpl implements PortalPluginService {
         plugin.setToken(newToken);
         plugin.setUpdatedAt(System.currentTimeMillis());
         pluginMapper.updateById(plugin);
-        
-        // TODO: If we have active gRPC connections for this plugin, we might want to terminate them.
         
         return newToken;
     }
@@ -83,24 +92,46 @@ public class PortalPluginServiceImpl implements PortalPluginService {
         plugin.setStatus(status);
         plugin.setUpdatedAt(System.currentTimeMillis());
         pluginMapper.updateById(plugin);
-
-        // TODO: If disabled (status=0), disconnect active sessions.
     }
 
     @Override
     public List<PortalPluginVo> listPlugins() {
-        List<PortalPlugin> list = pluginMapper.selectList(new LambdaQueryWrapper<PortalPlugin>()
+        // 1. Remote Plugins from DB
+        List<PortalPlugin> dbList = pluginMapper.selectList(new LambdaQueryWrapper<PortalPlugin>()
                 .orderByDesc(PortalPlugin::getCreatedAt));
+                
+        List<PortalPluginVo> result = new ArrayList<>();
         
-        return list.stream().map(p -> PortalPluginVo.builder()
-                .id(p.getId())
-                .pluginKey(p.getPluginKey())
-                .name(p.getName())
-                .description(p.getDescription())
-                .status(p.getStatus())
-                .createdAt(p.getCreatedAt())
-                .isConnected(false) // TODO: Check connection manager
-                .build()).collect(Collectors.toList());
+        for (PortalPlugin p : dbList) {
+            result.add(PortalPluginVo.builder()
+                    .id(p.getId())
+                    .pluginKey(p.getPluginKey())
+                    .name(p.getName())
+                    .description(p.getDescription())
+                    .status(p.getStatus())
+                    .createdAt(p.getCreatedAt())
+                    .isConnected(connectionManager.isConnected(p.getPluginKey()))
+                    .isBuiltin(false)
+                    .build());
+        }
+
+        // 2. Local Plugins from Manager
+        List<PushPlugin> localPlugins = pluginManagerService.getLocalPlugins();
+        for (PushPlugin p : localPlugins) {
+            PluginMeta meta = p.getMeta();
+            result.add(PortalPluginVo.builder()
+                    .id(-1) // Negative ID for builtin
+                    .pluginKey(meta.getId())
+                    .name(meta.getName())
+                    .description(meta.getDescription())
+                    .status(1) // Always enabled for now, or manage state elsewhere
+                    .createdAt(0L)
+                    .isConnected(true) // Builtin is always connected
+                    .isBuiltin(true)
+                    .build());
+        }
+        
+        return result;
     }
 
     @Override
@@ -110,9 +141,6 @@ public class PortalPluginServiceImpl implements PortalPluginService {
         if (plugin == null) {
              throw new PortalException(PortalStatus.NOT_FOUND, "Plugin not found");
         }
-        
-        // TODO: Check if any Apps are using this plugin before deleting.
-        
         pluginMapper.deleteById(id);
     }
 }

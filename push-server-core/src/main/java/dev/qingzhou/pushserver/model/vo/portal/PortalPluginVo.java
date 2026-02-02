@@ -14,4 +14,5 @@ public class PortalPluginVo {
     private Long createdAt;
     // 注意：Token 通常不在此处返回，或者只返回脱敏后的版本
     private Boolean isConnected; // 预留字段：当前是否在线
+    private Boolean isBuiltin;
 }
