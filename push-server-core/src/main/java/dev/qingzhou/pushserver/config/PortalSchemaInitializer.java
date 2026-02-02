@@ -118,6 +118,18 @@ public class PortalSchemaInitializer {
                     created_at INTEGER NOT NULL
                 )
                 """);
+        statements.add("""
+                CREATE TABLE IF NOT EXISTS v2_plugin (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    plugin_key TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    token TEXT NOT NULL,
+                    status INTEGER NOT NULL DEFAULT 1,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL
+                )
+                """);
 
         try (Connection connection = dataSource.getConnection()) {
             try (Statement statement = connection.createStatement()) {
