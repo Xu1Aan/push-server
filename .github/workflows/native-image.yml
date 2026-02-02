@@ -65,8 +65,8 @@ jobs:
           npm install
           npm run build
           cd ..
-          mkdir -p src/main/resources/static
-          cp -r push-server-web/dist/* src/main/resources/static/
+          mkdir -p push-server-core/src/main/resources/static
+          cp -r push-server-web/dist/* push-server-core/src/main/resources/static/
 
       - name: Run tests
         shell: bash
@@ -74,12 +74,13 @@ jobs:
 
       - name: Build native image
         shell: bash
-        run: ${{ env.MVN_CMD }} -B -Pnative -DskipTests native:compile
+        run: ${{ env.MVN_CMD }} -B -pl push-server-core -am -Pnative -DskipTests native:compile
 
       - name: Rename binary
         shell: bash
         run: |
-          src="target/push-server${{ matrix.ext }}"
+          mkdir -p target
+          src="push-server-core/target/push-server-core${{ matrix.ext }}"
           dest="target/push-server-${{ matrix.artifact }}${{ matrix.ext }}"
           if [ -f "$src" ]; then
             mv "$src" "$dest"
@@ -143,18 +144,18 @@ jobs:
           npm install
           npm run build
           cd ..
-          mkdir -p src/main/resources/static
-          cp -r push-server-web/dist/* src/main/resources/static/
+          mkdir -p push-server-core/src/main/resources/static
+          cp -r push-server-web/dist/* push-server-core/src/main/resources/static/
 
       - name: Build native image
         shell: bash
-        run: ${{ env.MVN_CMD }} -B -Pnative -DskipTests native:compile
+        run: ${{ env.MVN_CMD }} -B -pl push-server-core -am -Pnative -DskipTests native:compile
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
           name: push-server-${{ matrix.arch }}
-          path: target/push-server
+          path: push-server-core/target/push-server-core
           if-no-files-found: error
 
   docker-push:
@@ -180,8 +181,8 @@ jobs:
       - name: Prepare binaries
         run: |
           mkdir -p target
-          cp bin-amd64/push-server target/push-server-amd64
-          cp bin-arm64/push-server target/push-server-arm64
+          cp bin-amd64/push-server-core target/push-server-amd64
+          cp bin-arm64/push-server-core target/push-server-arm64
           ls -R target
 
       - name: Set up Docker Buildx
