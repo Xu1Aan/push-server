@@ -12,6 +12,7 @@ import dev.qingzhou.pushserver.service.PortalCorpConfigService;
 import dev.qingzhou.pushserver.service.PortalWecomAppService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class WecomCallbackController {
     public WecomCallbackController(PortalWecomAppService wecomAppService,
                                    PortalCorpConfigService corpConfigService,
                                    PluginManagerService pluginManagerService,
-                                   TaskExecutor taskExecutor) {
+                                   @Qualifier("applicationTaskExecutor") TaskExecutor taskExecutor) {
         this.wecomAppService = wecomAppService;
         this.corpConfigService = corpConfigService;
         this.pluginManagerService = pluginManagerService;
