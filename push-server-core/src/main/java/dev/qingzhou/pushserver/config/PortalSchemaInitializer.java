@@ -92,11 +92,6 @@ public class PortalSchemaInitializer {
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_v2_app_api_key_hash
                 ON v2_app_api_key(api_key_hash)
                 """);
-        List<String> alterStatements = new ArrayList<>();
-        alterStatements.add("ALTER TABLE v2_app_api_key ADD COLUMN api_key_plain TEXT NOT NULL DEFAULT ''");
-        alterStatements.add("ALTER TABLE v2_app_api_key ADD COLUMN rate_limit_per_minute INTEGER NOT NULL DEFAULT 0");
-        alterStatements.add("ALTER TABLE v2_wecom_app ADD COLUMN token TEXT");
-        alterStatements.add("ALTER TABLE v2_wecom_app ADD COLUMN encoding_aes_key TEXT");
         statements.add("""
                 CREATE TABLE IF NOT EXISTS v2_message_log (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,6 +125,57 @@ public class PortalSchemaInitializer {
                     updated_at INTEGER NOT NULL
                 )
                 """);
+        statements.add("""
+                CREATE TABLE IF NOT EXISTS v2_app_plugin_config (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    app_id INTEGER NOT NULL,
+                    plugin_key TEXT NOT NULL,
+                    config_json TEXT,
+                    status INTEGER NOT NULL DEFAULT 1,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    UNIQUE(app_id, plugin_key)
+                )
+                """);
+        statements.add("""
+                CREATE TABLE IF NOT EXISTS v2_plugin_action_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    plugin_key TEXT NOT NULL,
+                    event_id TEXT,
+                    status INTEGER,
+                    message TEXT,
+                    app_id TEXT,
+                    app_name TEXT,
+                    user_id TEXT,
+                    type TEXT,
+                    content TEXT,
+                    plugin_config TEXT,
+                    created_at INTEGER NOT NULL,
+                    UNIQUE(plugin_key, event_id)
+                )
+                """);
+        statements.add("""
+                CREATE TABLE IF NOT EXISTS v2_plugin_heartbeat_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    plugin_key TEXT NOT NULL,
+                    current_inflight INTEGER,
+                    uptime_seconds INTEGER,
+                    created_at INTEGER NOT NULL
+                )
+                """);
+
+        List<String> alterStatements = new ArrayList<>();
+        alterStatements.add("ALTER TABLE v2_app_api_key ADD COLUMN api_key_plain TEXT NOT NULL DEFAULT ''");
+        alterStatements.add("ALTER TABLE v2_app_api_key ADD COLUMN rate_limit_per_minute INTEGER NOT NULL DEFAULT 0");
+        alterStatements.add("ALTER TABLE v2_wecom_app ADD COLUMN token TEXT");
+        alterStatements.add("ALTER TABLE v2_wecom_app ADD COLUMN encoding_aes_key TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN app_id TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN user_id TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN type TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN content TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN plugin_config TEXT");
+        alterStatements.add("ALTER TABLE v2_plugin_action_log ADD COLUMN app_name TEXT");
+        alterStatements.add("CREATE UNIQUE INDEX IF NOT EXISTS idx_v2_plugin_action_log_key_event ON v2_plugin_action_log(plugin_key, event_id)");
 
         try (Connection connection = dataSource.getConnection()) {
             try (Statement statement = connection.createStatement()) {
@@ -140,7 +186,7 @@ public class PortalSchemaInitializer {
                     try {
                         statement.execute(sql);
                     } catch (Exception ignored) {
-                        // Column may already exist; ignore migration errors to stay backward compatible.
+                        // Column/index may already exist; ignore to stay backward compatible.
                     }
                 }
             }

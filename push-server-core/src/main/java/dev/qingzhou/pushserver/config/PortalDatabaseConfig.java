@@ -1,6 +1,8 @@
 package dev.qingzhou.pushserver.config;
 
+import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,9 @@ public class PortalDatabaseConfig {
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
-        return new MybatisPlusInterceptor();
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.SQLITE));
+        return interceptor;
     }
 
     private String buildSqliteUrl(String filePath) {

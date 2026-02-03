@@ -9,7 +9,11 @@ import dev.qingzhou.push.api.spi.PushPlugin;
 import dev.qingzhou.push.api.spi.PushSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -42,11 +46,18 @@ public class WebhookPlugin implements PushPlugin {
                                 .description("接收事件的接口地址")
                                 .build(),
                         ConfigField.builder()
-                                .name("token")
-                                .label("Verify Token")
+                                .name("headerName")
+                                .label("Auth Header Name")
+                                .type(ConfigType.TEXT)
+                                .required(false)
+                                .description("可选，例如 Authorization")
+                                .build(),
+                        ConfigField.builder()
+                                .name("headerValue")
+                                .label("Auth Header Value")
                                 .type(ConfigType.PASSWORD)
                                 .required(false)
-                                .description("可选：用于安全校验的 Token")
+                                .description("可选，例如 Bearer xxx")
                                 .build()
                 ))
                 .build();
@@ -66,7 +77,8 @@ public class WebhookPlugin implements PushPlugin {
     @Override
     public void handle(ActionContext context) {
         String url = context.getConfig("url");
-        String token = context.getConfig("token");
+        String headerName = context.getConfig("headerName");
+        String headerValue = context.getConfig("headerValue");
 
         // 异步执行，避免阻塞主事件循环
         CompletableFuture.runAsync(() -> {
@@ -77,13 +89,16 @@ public class WebhookPlugin implements PushPlugin {
                 payload.put("userId", context.getUserId());
                 payload.put("content", context.getContent());
                 payload.put("timestamp", System.currentTimeMillis());
-                
-                if (token != null) {
-                    payload.put("token", token);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                if (StringUtils.hasText(headerName) && StringUtils.hasText(headerValue)) {
+                    headers.set(headerName, headerValue);
                 }
 
                 log.debug("Sending webhook to {}", url);
-                String response = restTemplate.postForObject(url, payload, String.class);
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                String response = restTemplate.postForObject(url, entity, String.class);
                 log.debug("Webhook response: {}", response);
                 
             } catch (Exception e) {
