@@ -145,8 +145,7 @@
                             <buildArg>--initialize-at-build-time=org.sqlite.util.ProcessRunner</buildArg>
                             <buildArg>--initialize-at-build-time=org.sqlite.util.OSInfo</buildArg>
                             <buildArg>--initialize-at-run-time=org.apache.ibatis</buildArg>
-
-                            <buildArg>--initialize-at-run-time=org.mybatis</buildArg>
+                            <buildArg>--initialize-at-run-time=io.grpc.netty.shaded.io.netty</buildArg>                            <buildArg>--initialize-at-run-time=org.mybatis</buildArg>
                             <buildArg>--initialize-at-run-time=org.apache.ibatis.logging</buildArg>
                             <buildArg>--initialize-at-run-time=org.apache.ibatis.logging.LogFactory</buildArg>
                         </buildArgs>
