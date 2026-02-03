@@ -47,4 +47,11 @@ public class PluginConnectionManager {
     public Long getLastHeartbeat(String pluginKey) {
         return lastHeartbeats.get(pluginKey);
     }
+
+    /**
+     * Snapshot of last heartbeat timestamps for monitoring.
+     */
+    public Map<String, Long> snapshotHeartbeats() {
+        return new ConcurrentHashMap<>(lastHeartbeats);
+    }
 }
