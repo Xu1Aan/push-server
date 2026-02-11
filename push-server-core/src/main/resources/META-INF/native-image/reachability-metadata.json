@@ -1542,8 +1542,18 @@
           "parameterTypes": []
         },
         {
+          "name": "getTurnstileConfig",
+          "parameterTypes": []
+        },
+        {
           "name": "getVersion",
           "parameterTypes": []
+        },
+        {
+          "name": "updateTurnstileConfig",
+          "parameterTypes": [
+            "dev.qingzhou.pushserver.model.dto.portal.TurnstileConfigRequest"
+          ]
         }
       ]
     },
@@ -2410,6 +2420,45 @@
         },
         {
           "name": "setUsername",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "dev.qingzhou.pushserver.model.dto.portal.TurnstileConfigRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSecretKey",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSiteKey",
+          "parameterTypes": []
+        },
+        {
+          "name": "isEnabled",
+          "parameterTypes": []
+        },
+        {
+          "name": "setEnabled",
+          "parameterTypes": [
+            "boolean"
+          ]
+        },
+        {
+          "name": "setSecretKey",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setSiteKey",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -12461,7 +12510,16 @@
       "glob": "sqlite-jdbc.properties"
     },
     {
+      "glob": "static/.well-known/appspecific/com.chrome.devtools.json"
+    },
+    {
+      "glob": "static/assets/DashboardView-B2MNrj-2.js"
+    },
+    {
       "glob": "static/assets/DashboardView-BQ-3UbUb.js"
+    },
+    {
+      "glob": "static/assets/DashboardView-CDau1uW5.js"
     },
     {
       "glob": "static/assets/DashboardView-D6Hck1UZ.js"
@@ -12500,7 +12558,16 @@
       "glob": "static/assets/index-BQHYf_DI.js"
     },
     {
+      "glob": "static/assets/index-ChEtmHeK.js"
+    },
+    {
+      "glob": "static/assets/index-DfoQW2_6.js"
+    },
+    {
       "glob": "static/assets/index-FpXCWsKn.css"
+    },
+    {
+      "glob": "static/assets/index-OuPPjUqQ.css"
     },
     {
       "glob": "static/favicon.png"
@@ -12510,6 +12577,12 @@
     },
     {
       "glob": "static/logo.png"
+    },
+    {
+      "glob": "static/system/content.css.map"
+    },
+    {
+      "glob": "static/system/sidebar.css.map"
     },
     {
       "module": "java.base",
