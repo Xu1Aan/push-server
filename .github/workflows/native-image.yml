@@ -107,20 +107,30 @@ jobs:
 
       - name: Build native image
         shell: bash
-        run: ${{ env.MVN_CMD }} -B -pl push-server-core -am -Pnative -DskipTests native:compile
+        run: ${{ env.MVN_CMD }} -B -pl push-server-core -Pnative -DskipTests native:compile
 
       - name: Rename binary
         shell: bash
         run: |
           mkdir -p target-bin
-          src="push-server-core/target/push-server-core${{ matrix.ext }}"
-          dest="target-bin/push-server-${{ matrix.artifact }}${{ matrix.ext }}"
-          if [ -f "$src" ]; then
-            mv "$src" "$dest"
-          else
-            echo "Error: Binary not found at $src"
+          # 尝试从不同的可能位置查找生成的二进制文件
+          FOUND_BIN=""
+          for f in push-server-core/target/push-server-core${{ matrix.ext }} push-server-core/target/push-server${{ matrix.ext }}; do
+            if [ -f "$f" ]; then
+              FOUND_BIN="$f"
+              break
+            fi
+          done
+
+          if [ -z "$FOUND_BIN" ]; then
+            echo "Error: Native image binary not found!"
+            ls -R push-server-core/target/
             exit 1
           fi
+
+          dest="target-bin/push-server-${{ matrix.artifact }}${{ matrix.ext }}"
+          echo "Moving $FOUND_BIN to $dest"
+          mv "$FOUND_BIN" "$dest"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
