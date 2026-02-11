@@ -45,6 +45,8 @@ public class GrpcPluginProxy implements PushPlugin {
 
         if ("CLICK".equalsIgnoreCase(context.getType())) {
             eventBuilder.setType(UserActionType.USER_ACTION_TYPE_CLICK);
+        } else if ("IMAGE".equalsIgnoreCase(context.getType())) {
+            eventBuilder.setType(UserActionType.USER_ACTION_TYPE_IMAGE);
         } else {
             eventBuilder.setType(UserActionType.USER_ACTION_TYPE_TEXT);
         }

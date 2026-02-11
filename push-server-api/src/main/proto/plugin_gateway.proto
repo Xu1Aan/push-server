@@ -92,6 +92,7 @@ enum UserActionType {
     USER_ACTION_TYPE_UNSPECIFIED = 0;
     USER_ACTION_TYPE_TEXT = 1;
     USER_ACTION_TYPE_CLICK = 2;
+    USER_ACTION_TYPE_IMAGE = 3;
 }
 
 message UserActionEvent {

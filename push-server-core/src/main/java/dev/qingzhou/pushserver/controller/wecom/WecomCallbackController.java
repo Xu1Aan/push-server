@@ -109,6 +109,9 @@ public class WecomCallbackController {
             content = StringUtils.hasText(payload.getEventKey())
                     ? payload.getEventKey()
                     : payload.getEvent();
+        } else if ("image".equalsIgnoreCase(payload.getReceiveMsgType())) {
+            type = "IMAGE";
+            content = payload.getPicUrl();
         }
 
         if (!StringUtils.hasText(content) && StringUtils.hasText(payload.getPicUrl())) {

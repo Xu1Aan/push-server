@@ -1464,6 +1464,12 @@
         {
           "name": "list",
           "parameterTypes": []
+        },
+        {
+          "name": "switchStatus",
+          "parameterTypes": [
+            "java.util.Map"
+          ]
         }
       ]
     },
@@ -1494,6 +1500,12 @@
           "name": "<init>",
           "parameterTypes": [
             "dev.qingzhou.pushserver.service.PortalProxyConfigService"
+          ]
+        },
+        {
+          "name": "delete",
+          "parameterTypes": [
+            "jakarta.servlet.http.HttpSession"
           ]
         },
         {
@@ -2722,6 +2734,12 @@
         },
         {
           "name": "setDescription",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setErrorMessage",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -3986,6 +4004,13 @@
         {
           "name": "listPlugins",
           "parameterTypes": []
+        },
+        {
+          "name": "switchStatus",
+          "parameterTypes": [
+            "java.lang.Integer",
+            "java.lang.Integer"
+          ]
         }
       ]
     },
@@ -4007,6 +4032,12 @@
           "name": "<init>",
           "parameterTypes": [
             "dev.qingzhou.pushserver.manager.wecom.WecomApiClient"
+          ]
+        },
+        {
+          "name": "deleteByUserId",
+          "parameterTypes": [
+            "java.lang.Long"
           ]
         },
         {
@@ -4540,6 +4571,17 @@
     },
     {
       "type": "java.io.FileDescriptor"
+    },
+    {
+      "type": "java.io.FileNotFoundException",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
     },
     {
       "type": "java.io.Serializable"
@@ -12422,6 +12464,9 @@
       "glob": "static/assets/DashboardView-BQ-3UbUb.js"
     },
     {
+      "glob": "static/assets/DashboardView-D6Hck1UZ.js"
+    },
+    {
       "glob": "static/assets/DashboardView-DHdOv7sv.css"
     },
     {
@@ -12431,7 +12476,13 @@
       "glob": "static/assets/InitView-Dn7DLcnb.js"
     },
     {
+      "glob": "static/assets/PluginsView-CNi8y0aY.css"
+    },
+    {
       "glob": "static/assets/PluginsView-CeF5nKD9.css"
+    },
+    {
+      "glob": "static/assets/PluginsView-CssPFoQP.js"
     },
     {
       "glob": "static/assets/PluginsView-DhuTfWVL.js"
@@ -12441,6 +12492,9 @@
     },
     {
       "glob": "static/assets/ProxyView-DRIg8mIw.js"
+    },
+    {
+      "glob": "static/assets/index-BHUmIbXc.js"
     },
     {
       "glob": "static/assets/index-BQHYf_DI.js"
