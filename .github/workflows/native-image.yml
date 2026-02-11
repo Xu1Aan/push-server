@@ -3,6 +3,7 @@ name: native-image
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,93 +18,22 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact: linux
+            artifact: linux-amd64
+            arch: amd64
+            ext: ""
+          - os: ubuntu-24.04-arm
+            artifact: linux-arm64
+            arch: arm64
             ext: ""
           - os: macos-latest
             artifact: macos
+            arch: macos
             ext: ""
           - os: windows-latest
             artifact: windows
+            arch: windows
             ext: ".exe"
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Liberica NIK
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '25'
-          distribution: 'liberica' # 这里指定使用 Liberica 发行版
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: 'maven'
-
-      - name: Select Maven command
-        shell: bash
-        run: |
-          if [ -f ./mvnw ]; then
-            chmod +x ./mvnw
-            echo "MVN_CMD=./mvnw" >> "$GITHUB_ENV"
-          else
-            echo "MVN_CMD=mvn" >> "$GITHUB_ENV"
-          fi
-
-      - name: Checkout Frontend
-        uses: actions/checkout@v4
-        with:
-          repository: qingzhou-dev/push-server-web
-          path: push-server-web
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build Frontend
-        shell: bash
-        run: |
-          cd push-server-web
-          npm install
-          npm run build
-          cd ..
-          mkdir -p push-server-core/src/main/resources/static
-          cp -r push-server-web/dist/* push-server-core/src/main/resources/static/
-
-      - name: Run tests
-        shell: bash
-        run: ${{ env.MVN_CMD }} -B test
-
-      - name: Build native image
-        shell: bash
-        run: ${{ env.MVN_CMD }} -B -pl push-server-core -am -Pnative -DskipTests native:compile
-
-      - name: Rename binary
-        shell: bash
-        run: |
-          mkdir -p target
-          src="push-server-core/target/push-server-core${{ matrix.ext }}"
-          dest="target/push-server-${{ matrix.artifact }}${{ matrix.ext }}"
-          if [ -f "$src" ]; then
-            mv "$src" "$dest"
-          fi
-
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: target/push-server-${{ matrix.artifact }}${{ matrix.ext }}
-
-  docker-build:
-    name: docker build (${{ matrix.arch }})
-    runs-on: ${{ matrix.os }}
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            arch: amd64
-          - os: ubuntu-24.04-arm
-            arch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -151,17 +81,38 @@ jobs:
         shell: bash
         run: ${{ env.MVN_CMD }} -B -pl push-server-core -am -Pnative -DskipTests native:compile
 
-      - name: Upload binary
+      - name: Rename binary
+        shell: bash
+        run: |
+          mkdir -p target-bin
+          src="push-server-core/target/push-server-core${{ matrix.ext }}"
+          dest="target-bin/push-server-${{ matrix.artifact }}${{ matrix.ext }}"
+          if [ -f "$src" ]; then
+            mv "$src" "$dest"
+          else
+            echo "Error: Binary not found at $src"
+            exit 1
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: push-server-${{ matrix.arch }}
-          path: push-server-core/target/push-server-core
+          name: push-server-${{ matrix.artifact }}
+          path: target-bin/push-server-${{ matrix.artifact }}${{ matrix.ext }}
           if-no-files-found: error
+
+      - name: Upload release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: target-bin/push-server-${{ matrix.artifact }}${{ matrix.ext }}
 
   docker-push:
     name: docker push
     runs-on: ubuntu-latest
-    needs: docker-build
+    needs: build
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -169,20 +120,20 @@ jobs:
       - name: Download amd64 binary
         uses: actions/download-artifact@v4
         with:
-          name: push-server-amd64
+          name: push-server-linux-amd64
           path: bin-amd64
 
       - name: Download arm64 binary
         uses: actions/download-artifact@v4
         with:
-          name: push-server-arm64
+          name: push-server-linux-arm64
           path: bin-arm64
 
       - name: Prepare binaries
         run: |
           mkdir -p target
-          cp bin-amd64/push-server-core target/push-server-amd64
-          cp bin-arm64/push-server-core target/push-server-arm64
+          cp bin-amd64/push-server-linux-amd64 target/push-server-amd64
+          cp bin-arm64/push-server-linux-arm64 target/push-server-arm64
           ls -R target
 
       - name: Set up Docker Buildx
