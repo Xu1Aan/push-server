@@ -38,6 +38,11 @@ flowchart LR
 * **多应用隔离**：支持管理多个企业微信应用，每个应用拥有独立 API Key 和限流策略。
 * **内嵌数据库**：默认使用 SQLite 数据库，无需安装额外的数据库服务。
 * **开箱即用**：无需复杂配置，首次运行后通过 Web 页面即可完成初始化。
+* **插件扩展支持**：支持 gRPC 双向流插件扩展，可实时接收并处理用户在企业微信端的消息与点击事件。
+    *   **消息回调增强**：现已支持**图片消息**回调，插件可获取用户发送的图片 URL 进行二次处理。
+* **全平台 CI/CD**：提供全自动化的 GitHub Actions 流，支持多架构（Linux amd64/arm64, macOS, Windows）二进制产物构建。
+    *   **多架构 Docker**：支持一键构建 amd64 与 arm64 多架构 Docker 镜像。
+    *   **API 自动发布**：Release 时自动将 API 模块发布至 GitHub Packages，方便插件开发者引用。
 
 ---
 
@@ -123,6 +128,7 @@ docker-compose up -d
 
 * **风险**: 未开启验证可能导致登录接口面临暴力破解或恶意攻击风险。
 * **配置**: 开启验证需前往 [Cloudflare](https://www.cloudflare.com/products/turnstile/) 获取 Site Key 和 Secret Key，并在系统设置中填入。
+* **管理**: 系统初始化后，可通过 [**Turnstile 管理 API**](./docs/turnstile-api.md) 或后台管理页面（开发中）随时修改 Site Key 或开关验证。
 
 ---
 
