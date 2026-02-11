@@ -23,8 +23,7 @@ jobs:
         with:
           java-version: '25'
           distribution: 'liberica'
-          server-id: github # 对应 ~/.m2/settings.xml 中的 id
-          settings-path: ${{ github.workspace }}
+          server-id: github # 对应 pom.xml 中的 distributionManagement.repository.id
 
       - name: Publish API to GitHub Packages
         run: mvn -B clean deploy -pl push-server-api -am -DskipTests
